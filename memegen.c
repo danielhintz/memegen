@@ -6,8 +6,9 @@
 #include "util.h"
 
 void usage() {
-	fprintf(stderr, "memegen <-c text color> <-i inputfile> <-t top text> <-b bottom text>\n"
-			"inputfile must not be empty and need at least top or bottom text\n"
+	fprintf(stderr, "memegen <-c text color> <-i inputfile> <-o outputfile> <-t top text> <-b bottom text>\n"
+			"if inputfile is missing it reads from stdin, if outputfile is missing goes to stdout \n"
+			"and need at least top or bottom text\n"
 			"Only supports ascii\n"
 			"Output is written to stdout\n");
 	exit(1);
@@ -17,13 +18,17 @@ char *argv0;
 int main(int argc, char **argv) {
 	char *top = "";
 	char *bot = "";
-	char *input=0;
+	FILE *inputfile=stdin;
+	FILE *outputfile=stdout;
 	float scale = 1;
 	uint32 color = 0xffffffff;
 
 	ARGBEGIN {
 		case 'i' :
-			input = ARGF_(0);
+			inputfile = fopen(ARGF_(0), "r");
+			break;
+		case 'o' :
+			outputfile = fopen(ARGF_(0), "r+");
 			break;
 		case 't':
 			top = ARGF_(0);
@@ -41,12 +46,13 @@ int main(int argc, char **argv) {
 			break;
 	} ARGEND
 
-	if(!input || (!top && !bot))
+	if((!top && !bot))
 		usage();
 
 	png_image image = {.version = PNG_IMAGE_VERSION, .opaque = NULL, };
 
-	if(!png_image_begin_read_from_file(&image, input)) usage();
+
+	if(!png_image_begin_read_from_stdio(&image, inputfile)) usage();
 	image.format = PNG_FORMAT_ARGB;
 
 	uint8 *buffer = malloc(PNG_IMAGE_SIZE(image));
@@ -97,7 +103,7 @@ int main(int argc, char **argv) {
 	output.width = image.width;
 	output.height = image.height;
 
-	png_image_write_to_stdio(&output, stdout, 0, buffer, 0, NULL);
+	png_image_write_to_stdio(&output, outputfile, 0, buffer, 0, NULL);
 
 	png_image_free(&image);
 	free(buffer);

@@ -1,6 +1,10 @@
-all: compile
+all: memegen
 
+memegen: memegen.o
+	gcc -o memegen memegen.o -lpng
 
-compile:
-	gcc -lpng memegen.c -o memegen
+memegen.o: memegen.c
+	gcc -c memegen.c
 
+clean:
+	rm memegen.o memegen
