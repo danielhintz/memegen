@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 			bot = ARGF_(0);
 			break;
 		case 'c':
-			color = atoi(ARGF_(0));
+			color = strtol(ARGF_(0), NULL, 16);
 			break;
 		default:
 			break;
