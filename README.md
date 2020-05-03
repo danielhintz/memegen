@@ -12,7 +12,7 @@ Anyone who doesn't want to be forced to use online meme making tools but also do
 
 Make sure libpng is installed on your system and then simply compile.
 
-There is an install target in the makefile for copying to /usr/bin/ so the script is available globally.
+There is an install target in the makefile for copying to /usr/bin/ so the script is available globally, this needs to be run as super user.
 
 To install locally just copy it to somewhere that your user has in the $PATH
 
@@ -20,6 +20,11 @@ To install locally just copy it to somewhere that your user has in the $PATH
 
 ```
 memegen <-c text color> <-i inputfile> <-o outputfile> <-t top text> <-b bottom text>
+```
+If you don't have a PNG, you can pipe the output of convert directly into memege aka
+
+```
+convert input.bmp png:- | memegen -t 'look at this shit' -b 'shit wow'
 ```
 
 ## How does it work
