@@ -8,10 +8,31 @@
 void usage() {
 	fprintf(stderr, "memegen <-c text color> <-i inputfile> <-o outputfile> <-t top text> <-b bottom text>\n"
 			"if inputfile is missing it reads from stdin, if outputfile is missing goes to stdout \n"
-			"and need at least top or bottom text\n"
+			"Need at least top or bottom text\n"
 			"Only supports ascii\n"
-			"Output is written to stdout\n");
+			"Output is written to stdout unless an output file is provided\n");
 	exit(1);
+}
+
+void
+blitText(uint32 *buffer, char *text, png_image *image, uint32 color, int xStart, int yStart, float scale) {
+	if(!text)return;
+	int len = strlen(text);
+	for(int y = 0; y < 8*scale;y++) {
+		for(int i = 0;i<8*scale;i++) {
+			for(int x=0;x<len;x++){
+				uint8 *current = font[text[x]];
+				int row = current[(int)(y/scale)];
+				int y0 = y+yStart;
+				int x0 = (x*8*scale+i) + xStart ;
+				if((row >> (int)(i/scale)) & 1){
+					if(x0 < 0 || x0 > image->width-1)continue;
+					if(y0 < 0 || y0 > image->height-1)continue;
+					buffer[x0+y0*image->width] = color;
+				}
+			}
+		}
+	}
 }
 
 char *argv0;
@@ -28,7 +49,7 @@ int main(int argc, char **argv) {
 			inputfile = fopen(ARGF_(0), "r");
 			break;
 		case 'o' :
-			outputfile = fopen(ARGF_(0), "r+");
+			outputfile = fopen(ARGF_(0), "w+");
 			break;
 		case 't':
 			top = ARGF_(0);
@@ -37,7 +58,12 @@ int main(int argc, char **argv) {
 			bot = ARGF_(0);
 			break;
 		case 'c':
-			color = strtol(ARGF_(0), NULL, 16);
+			color = strtoll(ARGF_(0), NULL, 16) ;
+			int r = color&0xff;
+			int g = (color >> 8)&0xff;
+			int b = (color >> 16)&0xff;
+			int a=0xff;
+			color = (a<<24)|(r<<16)|(g<<8)|b;
 			break;
 		case 's':
 			scale = atof(ARGF_(0));
@@ -53,7 +79,7 @@ int main(int argc, char **argv) {
 
 
 	if(!png_image_begin_read_from_stdio(&image, inputfile)) usage();
-	image.format = PNG_FORMAT_ARGB;
+	image.format = PNG_FORMAT_RGBA;
 
 	uint8 *buffer = malloc(PNG_IMAGE_SIZE(image));
 
@@ -62,43 +88,14 @@ int main(int argc, char **argv) {
 	uint32 topPos = image.height*0.05;
 	uint32 botPos = image.height*0.95;
 
-	uint32 topLength= strlen(top);
-	uint32 botLength= strlen(bot);
+	uint32 topLen = strlen(top);
+	uint32 botLen = strlen(bot);
 
-	for(int y = 0; y < 8*scale;y++) {
-		for(int x=0;x<topLength;x++){
-			uint8 *current = font[top[x]];
-			int row = current[(int)(y/scale)];
-			int y0 = y+topPos;
-			for(int i = 0;i<8*scale;i++) {
-				int x0 = (x*8*scale+i)+ image.width/2 ;
-				x0-=(topLength*scale*8)/2;
-				if((row >> (int)(i/scale)) & 1){
-					if(x0 < 0 || x0 > image.width-1)continue;
-					if(y0 < 0 || y0 > image.height-1)continue;
-					((uint32 *)buffer)[x0+y0*image.width] = color;
-				}
-			}
-		}
-		for(int x=0;x<botLength;x++){
-			uint8 *current = font[bot[x]];
-			int row = current[(int)(y/scale)];
-			int y0 = botPos-8*scale+y;
-			for(int i = 0;i<8*scale;i++) {
-				int x0 = (x*8*scale+i)+ image.width/2 ;
-				x0-=(topLength*scale*8)/2;
-				if((row >> (int)(i/scale)) & 1){
-					if(x0 < 0 || x0 > image.width-1)continue;
-					if(y0 < 0 || y0 > image.height-1)continue;
-					((uint32 *)buffer)[x0+y0*image.width] = color;
-				}
-			}
-		}
-	}
-
+	blitText((uint32 *)buffer, top, &image, color, image.width/2-(topLen*scale*8)/2, topPos, scale);
+	blitText((uint32 *)buffer, bot, &image, color, image.width/2-(botLen*scale*8)/2, botPos-8*scale, scale);
 
 	png_image output = {0};
-	output.format = PNG_FORMAT_ARGB;
+	output.format = PNG_FORMAT_RGBA;
 	output.version = PNG_IMAGE_VERSION;
 	output.width = image.width;
 	output.height = image.height;
