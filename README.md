@@ -6,7 +6,7 @@ Commandline utility to add 'top' and/or 'bottom' text to an image
 
 ## Why?
 
-Anyone who doesn't want to be forced to use online meme making tools but also doesn't want to have to fire up GIMP. This creates a nice middle ground.
+Anyone who doesn't want to be forced to use online meme making tools but also doesn't want to have to fire up GIMP or some other image processor. This creates a nice middle ground.
 
 ## Install
 
