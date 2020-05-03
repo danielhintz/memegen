@@ -1,6 +1,6 @@
 # Memegen
 
-## What does the project do?
+## What does it do?
 
 Commandline utility to add 'top' and/or 'bottom' text to an image
 
@@ -15,6 +15,12 @@ Make sure libpng is installed on your system and then simply compile.
 There is an install target in the makefile for copying to /usr/bin/ so the script is available globally.
 
 To install locally just copy it to somewhere that your user has in the $PATH
+
+## Usage
+
+```
+memegen <-c text color> <-i inputfile> <-o outputfile> <-t top text> <-b bottom text>
+```
 
 ## How does it work
 
