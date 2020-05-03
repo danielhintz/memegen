@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
 			bot = ARGF_(0);
 			break;
 		case 'c':
-			color = strtoll(ARGF_(0), NULL, 16) ;
+			color = strtol(ARGF_(0), NULL, 16);
 			int r = color&0xff;
 			int g = (color >> 8)&0xff;
 			int b = (color >> 16)&0xff;
